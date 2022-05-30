@@ -5,9 +5,9 @@ namespace OpenGL.Camera
 {
     public static class Camera
     {
-        public const float FOV = 60f;//угол обзора (field of view)
-        public const float Z_NEAR = 0.1f;//Позиция ближней Z плоскости. Позволяет нам обрезать объекты, находящиеся слишком близко к камере.
-        public const float Z_FAR = 1000;//Позиция дальней Z плоскости. Позволяет нам обрезать объекты, находящиеся слишком далеко от камеры.
+        public static float FOV = 60f;//угол обзора (field of view)
+        public static float Z_NEAR = 0.1f;//Позиция ближней Z плоскости. Позволяет нам обрезать объекты, находящиеся слишком близко к камере.
+        public static float Z_FAR = 1000;//Позиция дальней Z плоскости. Позволяет нам обрезать объекты, находящиеся слишком далеко от камеры.
         public static Vector3 Up = new Vector3(0, 1, 0);//верх камеры
 
         private static float _width, _height;//ширина-высота игрового окна

@@ -11,14 +11,14 @@ namespace OpenGL.Lightning.Variables
 {
     public class SpotLight : Lightning
     {
-        protected Vector3 direction = new Vector3(0, 90, 0);
+        public Vector3 direction = new Vector3(-45, 90, -45);
         protected BaseLight light = new BaseLight()
         {
             Color = new Vector3(1,0,1),
             DiffuseIntensity = 100f,
             AmbientIntensity = 3f,
         };
-        protected Vector3 position = new Vector3(0.0f, -1f, 0f);
+        public Vector3 position = new Vector3(0.0f, -2f, 0f);
         protected float cutoff = 80.0f; 
         protected Attenuation atten = new Attenuation() { Constant=0, Linear =0,Exp=1f };
 

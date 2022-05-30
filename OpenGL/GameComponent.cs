@@ -1,6 +1,6 @@
 ﻿namespace OpenGL
 {
-    internal class GameComponent
+    public class GameComponent
     {
         protected Game _game;
 

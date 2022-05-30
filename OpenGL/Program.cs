@@ -25,6 +25,7 @@ namespace OpenGL
         List<RendererComponent> rendererElements = new List<RendererComponent>() //создаем список элементов, которые будут рендериться
         {
             new CubePolygonRenderer(new Vector3(0,0,0),new Vector3(1,1,1)),//создаем куб(1. позиция, где будет находиться объект, 2. масштаб  объекта)
+            new CubePolygonRenderer(new Vector3(0,2,0),new Vector3(10,1,10)),//создаем куб(1. позиция, где будет находиться объект, 2. масштаб  объекта)                     
         };
          
         List<Texture.Texture> textures = new List<Texture.Texture>() //создаем список текстур
@@ -45,6 +46,11 @@ namespace OpenGL
         public List<RendererComponent> Renderers { get { return rendererElements; } }
 
         private ShaderProgram shader;//создаем шейдерную программу
+        private ShaderProgram shadowShader;
+
+        private Shadow.ShadowFBO shadowFBO = new Shadow.ShadowFBO();
+        private Shadow.ShadowTechnique shadowTech = new Shadow.ShadowTechnique();
+
         public Game(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings)
                 : base(gameWindowSettings, nativeWindowSettings)
         {
@@ -63,7 +69,11 @@ namespace OpenGL
             GL.Enable(EnableCap.CullFace);//разблокируем функцию GL.CullFace()
             GL.Enable(EnableCap.Texture2D);
 
+            GL.Enable(EnableCap.DepthTest);
+
             GL.CullFace(CullFaceMode.Back);//включаем отбрасывание задних граней
+
+            shadowFBO.Initialize(this);
 
             Camera.Camera.Initialize(this);//инициализируем камеру   
             Camera.Camera.OnCameraChanged += OnCameraChanged;//подписываем наш метод на событие изменения камеры
@@ -91,6 +101,15 @@ namespace OpenGL
                                                                                         //одну вершину из потока вершин и генерирует одну вершину в выходной поток вершин
                 new ShaderPath("Data/Shaders/shader_base.frag",ShaderType.FragmentShader),//Фрагментный шейдер обрабатывает фрагмент, сгенерированный растеризацией, в набор цветов и одно значение глубины.
             });
+
+            shadowShader = new ShaderProgram(new List<ShaderPath>() {
+                new ShaderPath("Data/Shaders/shader_shadow.vert",ShaderType.VertexShader),//создаем шейдерную программу по указанному пути и задаем тип шейдера. Вершинный шейдер получает
+                                                                                        //одну вершину из потока вершин и генерирует одну вершину в выходной поток вершин
+                new ShaderPath("Data/Shaders/shader_shadow.frag",ShaderType.FragmentShader),//Фрагментный шейдер обрабатывает фрагмент, сгенерированный растеризацией, в набор цветов и одно значение глубины.
+            });
+
+            shadowTech.Initialize(shadowShader);
+            shadowShader.Enable();
 
             textures.ForEach(x => x.Initialize());//инициализизуем текстуры
 
@@ -121,11 +140,87 @@ namespace OpenGL
 
         protected override void OnRenderFrame(FrameEventArgs args)
         {
-            GL.Clear(ClearBufferMask.ColorBufferBit);//Очищает буфер цвета, Очищает кажный кадр нашу форму
+            ShadowMapPass();
+            Render();
+
+            base.OnRenderFrame(args);
+        }
+
+        private void ShadowMapPass()
+        {
+            GL.Viewport(0, 0, 1024, 1024);
+            shadowFBO.BindForWriting();
+
+            GL.Clear(ClearBufferMask.DepthBufferBit);
+
+
+            Vector3 startCameraPos = Camera.Camera.Position;
+            Vector3 startCameraRotation = Camera.Camera.Rotation;
+            shadowTech.SetWVP();
+            shadowShader.Enable();
+
+            public static Matrix4 lightProjection = Matrix4.CreateOrthographic(-10.0f, 10.0f, 1f, 7.5f);
+            public static Matrix4 lightView = Matrix4.LookAt(new Vector3(-2.0f, 4.0f, -1.0f), new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 1.0f, 0.0f));
+            public Matrix4 lightSpaceMatrix = lightProjection * lightView;
+
+
+        //shadowFBO.BindForWriting();
+
+        //GL.Clear(ClearBufferMask.DepthBufferBit);
+
+        //shadowShader.Enable();
+
+        //Vector3 startCameraPos = Camera.Camera.Position;
+        //Vector3 startCameraRotation = Camera.Camera.Rotation;
+
+        //Lightning.Variables.SpotLight spotLight = lights[3] as Lightning.Variables.SpotLight;
+
+        //Matrix4 lightProgection = Matrix4.CreateOrthographic(10f, -10f, 1f, 7.5f);
+        //Matrix4 lightView = Matrix4.LookAt(spotLight.position, Vector3.Zero, new Vector3(0, 1, 0));
+        //Matrix4 lightSpaceMatrix = lightProgection * lightView;
+
+
+
+        //Pipeline.Pipeline.SetScale(new Vector3(0.2f, 0.2f, 0.2f));
+        //Pipeline.Pipeline.SetPosition(new Vector3(0, 0, 5));
+        //Camera.Camera.Position = spotLight.position;
+        //Camera.Camera.Rotation = spotLight.direction;
+        //Camera.Camera.FOV = 60;
+        //Camera.Camera.Z_NEAR = 1;
+        //Camera.Camera.Z_FAR = 50;
+        //shadowTech.SetWVP();
+
+        //rendererElements.ForEach(x =>
+        //{
+        //    x.Update();
+        //});
+
+        //GL.BindFramebuffer(FramebufferTarget.Framebuffer,0);
+
+        //Pipeline.Pipeline.SetScale(new Vector3(1,1,1));
+        //Pipeline.Pipeline.SetPosition(new Vector3(0, 0, 0));
+        //Camera.Camera.Position = startCameraPos;
+        //Camera.Camera.Rotation = startCameraPos;
+        //Camera.Camera.FOV = 60;
+        //Camera.Camera.Z_NEAR = 0.1f;
+        //Camera.Camera.Z_FAR = 1000;
+    }
+
+        private void Render()
+        {
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);//Очищает буфер цвета, Очищает кажный кадр нашу форму
+
+
+            shadowFBO.BindForReading(TextureUnit.Texture1);
+
+            shadowTech.SetWVP();
 
             shader.Enable();//открываем доступ к шейдерной программе
 
-            rendererElements.ForEach(x => x.Update());//обновляем список элементов, которые должны отрендериться
+            rendererElements.ForEach(x =>
+            {
+                x.Update();
+            });//обновляем список элементов, которые должны отрендериться
 
             lights.ForEach(x => x.Update());
 
@@ -134,8 +229,6 @@ namespace OpenGL
             shader.Disable();//закрываем доступ к программе
 
             SwapBuffers();//Реализует двойную буферизацию, смена буферов
-
-            base.OnRenderFrame(args);
         }
 
         private void OnCameraChanged()

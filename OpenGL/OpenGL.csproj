@@ -21,6 +21,12 @@
     <None Update="Data\Shaders\shader_base.vert">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Data\Shaders\shader_shadow.frag">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\Shaders\shader_shadow.vert">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Data\Textures\texture.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

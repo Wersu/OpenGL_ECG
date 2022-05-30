@@ -12,9 +12,9 @@ namespace OpenGL.Lightning.Variables
     public class DirectionalLight : Lightning
     {
         public BaseLight light = new BaseLight() { 
-          Color = new Vector3(0.5f, 0.5f, 0.5f),
+          Color = new Vector3(1,1,1),
           DiffuseIntensity = 0.05f,
-          AmbientIntensity = 0.5f,
+          AmbientIntensity = 0f,
         };
 
         protected Vector3 _rotation = new Vector3(-30,-30,-30);//направление

@@ -5,6 +5,9 @@ namespace OpenGL.Pipeline
 {
     public static class Pipeline
     {
+        private static Vector3 worldScale = Vector3.One;
+        private static Vector3 worldPosition = Vector3.Zero;
+
         private static float ToRadian(float value) => (float)(value*Math.PI/180f);
         private static float ToDegree(float value) => (float)(value*180f/Math.PI);
         private static Matrix4 GetScaleTrans(Vector3 scale)
@@ -112,9 +115,9 @@ namespace OpenGL.Pipeline
 
         public static Matrix4 GetWorldTransformation()
         {
-            Matrix4 TranslationTrans = GetTranslationTrans(Vector3.Zero);
+            Matrix4 TranslationTrans = GetTranslationTrans(worldPosition);
             Matrix4 RotationTrans = GetRotateTrans(Vector3.Zero);
-            Matrix4 ScaleTrans = GetScaleTrans(Vector3.One);
+            Matrix4 ScaleTrans = GetScaleTrans(worldScale);
 
             return TranslationTrans * RotationTrans * ScaleTrans;
         }
@@ -140,6 +143,16 @@ namespace OpenGL.Pipeline
             {
                 Vertices[i].Normal.Normalize();
             }
+        }
+
+        public static void SetScale(Vector3 scale)
+        {
+            worldScale = scale;
+        }
+
+        public static void SetPosition(Vector3 pos)
+        {
+            worldPosition = pos;
         }
     }
 }
